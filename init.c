@@ -537,6 +537,8 @@ static void put_job(struct thread_data *td)
 	if (td->o.name)
 		free(td->o.name);
 
+	stat_free_lat(&td->ts);
+
 	memset(td, 0, sizeof(*td));
 	segments[cur_segment].nr_threads--;
 	thread_number--;
@@ -1527,6 +1529,7 @@ static int add_job(struct thread_data *td, const char *jobname, int job_add_num,
 		td->ts.clat_low_prio_stat[i].min_val = ULONG_MAX;
 	}
 	td->ts.sync_stat.min_val = ULONG_MAX;
+	stat_alloc_lat(&td->ts);
 	td->ddir_seq_nr = o->ddir_seq_nr;
 
 	if ((o->stonewall || o->new_group) && prev_group_jobs) {

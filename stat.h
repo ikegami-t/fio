@@ -22,9 +22,9 @@ struct group_run_stats {
  * How many depth levels to log
  */
 #define FIO_IO_U_MAP_NR	7
-#define FIO_IO_U_LAT_N_NR 10
-#define FIO_IO_U_LAT_U_NR 10
-#define FIO_IO_U_LAT_M_NR 12
+#define FIO_IO_U_LAT_N_NR stat_get_lat_n_nr()
+#define FIO_IO_U_LAT_U_NR stat_get_lat_u_nr()
+#define FIO_IO_U_LAT_M_NR stat_get_lat_m_nr()
 
 /*
  * Constants for clat percentiles
@@ -200,9 +200,9 @@ struct thread_stat {
 	uint64_t io_u_map[FIO_IO_U_MAP_NR];
 	uint64_t io_u_submit[FIO_IO_U_MAP_NR];
 	uint64_t io_u_complete[FIO_IO_U_MAP_NR];
-	uint64_t io_u_lat_n[FIO_IO_U_LAT_N_NR];
-	uint64_t io_u_lat_u[FIO_IO_U_LAT_U_NR];
-	uint64_t io_u_lat_m[FIO_IO_U_LAT_M_NR];
+	uint64_t *io_u_lat_n;
+	uint64_t *io_u_lat_u;
+	uint64_t *io_u_lat_m;
 	uint64_t io_u_plat[FIO_LAT_CNT][DDIR_RWDIR_CNT][FIO_IO_U_PLAT_NR];
 	uint64_t io_u_sync_plat[FIO_IO_U_PLAT_NR];
 
@@ -401,4 +401,9 @@ static inline bool nsec_to_msec(unsigned long long *min,
 
 uint32_t *io_u_block_info(struct thread_data *td, struct io_u *io_u);
 
+int stat_get_lat_n_nr(void);
+int stat_get_lat_u_nr(void);
+int stat_get_lat_m_nr(void);
+void stat_alloc_lat(struct thread_stat *ts);
+void stat_free_lat(struct thread_stat *ts);
 #endif
