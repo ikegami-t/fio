@@ -294,6 +294,11 @@ static struct option l_opts[FIO_NR_OPTIONS] = {
 		.val		= 'A' | FIO_CLIENT_FLAG,
 	},
 	{
+		.name		= (char *) "latency-stats",
+		.has_arg	= required_argument,
+		.val		= 'n' | FIO_CLIENT_FLAG,
+	},
+	{
 		.name		= NULL,
 	},
 };
@@ -2239,6 +2244,7 @@ static void usage(const char *name)
 	printf("  --trigger=cmd\t\tSet this command as local trigger\n");
 	printf("  --trigger-remote=cmd\tSet this command as remote trigger\n");
 	printf("  --aux-path=path\tUse this path for fio state generated files\n");
+	printf("  --latency-stats=nr\tChange default latency stats number\n");
 	printf("\nFio was written by Jens Axboe <axboe@kernel.dk>\n");
 }
 
@@ -2904,10 +2910,12 @@ int parse_cmd_line(int argc, char *argv[], int client_type)
 			}
 			trigger_timeout /= 1000000;
 			break;
-
 		case 'A':
 			did_arg = true;
 			merge_blktrace_only = true;
+			break;
+		case 'n':
+			stat_set_lat(atoi(optarg));
 			break;
 		case '?':
 			log_err("%s: unrecognized option '%s'\n", argv[0],

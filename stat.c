@@ -19,11 +19,11 @@
 
 #define LOG_MSEC_SLACK	1
 
-#define FIO_IO_U_LAT_N_NR_DEF 10
-#define FIO_IO_U_LAT_U_NR_DEF 10
-#define FIO_IO_U_LAT_M_NR_DEF 12
+#define FIO_IO_U_LAT_NR_DEF 10
 
 struct fio_sem *stat_sem;
+
+static int fio_io_u_lat_nr = FIO_IO_U_LAT_NR_DEF;
 
 void clear_rusage_stat(struct thread_data *td)
 {
@@ -3457,17 +3457,17 @@ uint32_t *io_u_block_info(struct thread_data *td, struct io_u *io_u)
 
 int stat_get_lat_n_nr(void)
 {
-	return FIO_IO_U_LAT_N_NR_DEF;
+	return fio_io_u_lat_nr;
 }
 
 int stat_get_lat_u_nr(void)
 {
-	return FIO_IO_U_LAT_U_NR_DEF;
+	return fio_io_u_lat_nr;
 }
 
 int stat_get_lat_m_nr(void)
 {
-	return FIO_IO_U_LAT_M_NR_DEF;
+	return fio_io_u_lat_nr + 2;
 }
 
 void stat_alloc_lat(struct thread_stat *ts)
@@ -3482,4 +3482,9 @@ void stat_free_lat(struct thread_stat *ts)
 		free(ts->io_u_lat_n);
 		free(ts->io_u_lat_u);
 		free(ts->io_u_lat_m);
+}
+
+void stat_set_lat(int nr)
+{
+	fio_io_u_lat_nr = nr;
 }
