@@ -1119,7 +1119,7 @@ static void io_u_mark_lat_usec(struct thread_data *td, unsigned long long usec)
 	case 2 ... 3:
 		idx = 1;
 		fallthrough;
-	case 0 ... 1:
+	case 1:
 		break;
 	}
 
@@ -1167,7 +1167,7 @@ static void io_u_mark_lat_msec(struct thread_data *td, unsigned long long msec)
 	case 2 ... 3:
 		idx = 1;
 		fallthrough;
-	case 0 ... 1:
+	case 1:
 		break;
 	}
 
