@@ -19,11 +19,13 @@
 
 #define LOG_MSEC_SLACK	1
 
-#define FIO_IO_U_LAT_NR_DEF 10
+#define STAT_LAT_NR_DEF 10
+#define STAT_LAT_RANGE_MAX 1000
 
 struct fio_sem *stat_sem;
 
-static int fio_io_u_lat_nr = FIO_IO_U_LAT_NR_DEF;
+static int stat_lat_nr = STAT_LAT_NR_DEF;
+static int *stat_lat_ranges;
 
 void clear_rusage_stat(struct thread_data *td)
 {
@@ -3457,17 +3459,56 @@ uint32_t *io_u_block_info(struct thread_data *td, struct io_u *io_u)
 
 int stat_get_lat_n_nr(void)
 {
-	return fio_io_u_lat_nr;
+	return stat_lat_nr;
 }
 
 int stat_get_lat_u_nr(void)
 {
-	return fio_io_u_lat_nr;
+	return stat_lat_nr;
 }
 
 int stat_get_lat_m_nr(void)
 {
-	return fio_io_u_lat_nr + 2;
+	return stat_lat_nr + 2;
+}
+
+void stat_alloc_lat_ranges(void)
+{
+	int i;
+	int range = STAT_LAT_RANGE_MAX;
+	int widths[] = { 1, 2, 6, 10, 30, 50, 150, 250 };
+	int width_nr = sizeof(widths) / sizeof(widths[0]);
+	int idx = width_nr - 1;
+
+	if (stat_lat_ranges)
+		return;
+
+	for (i = 0; i < width_nr; i++) {
+		widths[i] = widths[i] * STAT_LAT_NR_DEF / stat_lat_nr;
+		if (!widths[i])
+			widths[i]++;
+	}
+
+	stat_lat_ranges = calloc(stat_lat_nr, sizeof(int));
+
+	for (i = stat_lat_nr; i; i--) {
+		if (range > widths[idx])
+			range -= widths[idx];
+		else if (idx)
+			range -= widths[--idx];
+		stat_lat_ranges[i - 1] = range;
+	}
+
+	if (stat_lat_ranges[0] <= 0)
+		stat_lat_ranges[0] = 1;
+
+	for (i = 1; i < stat_lat_nr; i++) {
+		if (stat_lat_ranges[i] <= stat_lat_ranges[i - 1])
+			stat_lat_ranges[i] = stat_lat_ranges[i - 1] + 1;
+	}
+
+	for (i = 0; i < stat_lat_nr; i++)
+		dprint(FD_STAT, "range[%d]: %d\n", i, stat_lat_ranges[i]);
 }
 
 void stat_alloc_lat(struct thread_stat *ts)
@@ -3475,16 +3516,36 @@ void stat_alloc_lat(struct thread_stat *ts)
 	ts->io_u_lat_n = calloc(FIO_IO_U_LAT_N_NR, sizeof(uint64_t));
 	ts->io_u_lat_u = calloc(FIO_IO_U_LAT_U_NR, sizeof(uint64_t));
 	ts->io_u_lat_m = calloc(FIO_IO_U_LAT_M_NR, sizeof(uint64_t));
+	stat_alloc_lat_ranges();
 }
 
 void stat_free_lat(struct thread_stat *ts)
 {
-		free(ts->io_u_lat_n);
-		free(ts->io_u_lat_u);
-		free(ts->io_u_lat_m);
+	free(ts->io_u_lat_n);
+	free(ts->io_u_lat_u);
+	free(ts->io_u_lat_m);
+	free(stat_lat_ranges);
+	stat_lat_ranges = NULL;
 }
 
-void stat_set_lat(int nr)
+bool stat_set_lat(int nr)
 {
-	fio_io_u_lat_nr = nr;
+	if (nr >= STAT_LAT_RANGE_MAX)
+		return false;
+
+	stat_lat_nr = nr;
+
+	return true;
+}
+
+int stat_get_lat_idx(int lat)
+{
+	int i;
+
+	for (i = stat_lat_nr - 1; i >= 0; i--) {
+		if (lat >= stat_lat_ranges[i])
+			break;
+	}
+
+	return i;
 }

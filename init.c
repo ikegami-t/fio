@@ -2919,7 +2919,11 @@ int parse_cmd_line(int argc, char *argv[], int client_type)
 			merge_blktrace_only = true;
 			break;
 		case 'n':
-			stat_set_lat(atoi(optarg));
+			if (!stat_set_lat(atoi(optarg))) {
+				log_err("fio: bad latency stats number\n");
+				exit_val = 1;
+				do_exit++;
+			}
 			break;
 		case '?':
 			log_err("%s: unrecognized option '%s'\n", argv[0],

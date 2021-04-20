@@ -406,5 +406,6 @@ int stat_get_lat_u_nr(void);
 int stat_get_lat_m_nr(void);
 void stat_alloc_lat(struct thread_stat *ts);
 void stat_free_lat(struct thread_stat *ts);
-void stat_set_lat(int nr);
+bool stat_set_lat(int nr);
+int stat_get_lat_idx(int lat);
 #endif
