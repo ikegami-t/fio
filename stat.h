@@ -200,9 +200,18 @@ struct thread_stat {
 	uint64_t io_u_map[FIO_IO_U_MAP_NR];
 	uint64_t io_u_submit[FIO_IO_U_MAP_NR];
 	uint64_t io_u_complete[FIO_IO_U_MAP_NR];
-	uint64_t *io_u_lat_n;
-	uint64_t *io_u_lat_u;
-	uint64_t *io_u_lat_m;
+	union {
+		uint64_t *io_u_lat_n;
+		uint64_t pad2;
+	};
+	union {
+		uint64_t *io_u_lat_u;
+		uint64_t pad3;
+	};
+	union {
+		uint64_t *io_u_lat_m;
+		uint64_t pad4;
+	};
 	uint64_t io_u_plat[FIO_LAT_CNT][DDIR_RWDIR_CNT][FIO_IO_U_PLAT_NR];
 	uint64_t io_u_sync_plat[FIO_IO_U_PLAT_NR];
 
@@ -221,7 +230,7 @@ struct thread_stat {
 	 */
 	union {
 		uint16_t continue_on_error;
-		uint32_t pad2;
+		uint32_t pad5;
 	};
 	uint32_t first_error;
 	uint64_t total_err_count;
@@ -236,7 +245,7 @@ struct thread_stat {
 	uint32_t unit_base;
 
 	uint32_t latency_depth;
-	uint32_t pad3;
+	uint32_t pad6;
 	uint64_t latency_target;
 	fio_fp64_t latency_percentile;
 	uint64_t latency_window;
@@ -259,12 +268,12 @@ struct thread_stat {
 
 	union {
 		uint64_t *ss_iops_data;
-		uint64_t pad4;
+		uint64_t pad7;
 	};
 
 	union {
 		uint64_t *ss_bw_data;
-		uint64_t pad5;
+		uint64_t pad8;
 	};
 
 	uint64_t cachehit;
